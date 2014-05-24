@@ -416,9 +416,11 @@ sub Twilight_getWeatherHorizon($)
   
   my $location=$hash->{WEATHER};
   if ($location == 0)  {
-     $hash->{WEATHER_HORIZON}="0";
-     $hash->{CONDITION}="0";  
-     return 1;
+  	$hash->{WEATHER_HORIZON}=$hash->{INDOOR_HORIZON}+1;
+  	$hash->{CONDITION}="-1";
+    #$hash->{WEATHER_HORIZON}="0";
+    #$hash->{CONDITION}="0";  
+    return 1;
   } 
 
   my $mod = "[".$hash->{NAME} ."] ";
