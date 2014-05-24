@@ -420,42 +420,44 @@ sub Twilight_getWeatherHorizon($)
      return 1;
   } 
 
-  my $mod = "[".$hash->{NAME} ."] ";
-  my @a_current = (25,25,25,25,20,10,10,10,10,10,
-                   10, 7, 7, 7, 5,10,10, 6, 6, 6,
-                   10, 6 ,6, 6, 6, 6, 6, 5, 5, 3,
-                    3, 0, 0, 0, 0, 7, 0,15,15,15,
-                    9,15, 8, 5,12, 6, 8, 8);
+  if(defined($hash->{WEATHER})) {
+      my $mod = "[".$hash->{NAME} ."] ";
+      my @a_current = (25,25,25,25,20,10,10,10,10,10,
+		       10, 7, 7, 7, 5,10,10, 6, 6, 6,
+		       10, 6 ,6, 6, 6, 6, 6, 5, 5, 3,
+		       3, 0, 0, 0, 0, 7, 0,15,15,15,
+		       9,15, 8, 5,12, 6, 8, 8);
 
-  # condition codes are described in FHEM wiki and in the documentation of the yahoo weather API
-  my $url = "http://weather.yahooapis.com/forecastrss?w=".$location."&u=c";
-  my $xml = GetFileFromURL($url, 3, undef, 1);
+      # condition codes are described in FHEM wiki and in the documentation of the yahoo weather API
+      my $url = "http://weather.yahooapis.com/forecastrss?w=".$location."&u=c";
+      my $xml = GetFileFromURL($url, 3, undef, 1);
 
-  my $current, my $cond, my $temp, my $aktTemp;
-  if($xml=~/text="(.*)"(\ *)code="(.*)"(\ *)temp="(.*)"(\ *)date/){
-    if(defined($1)){
-      $cond   =$1;
-      $current=$3;
-      $temp   =$5;
-    }else{
-      $current=-1;
-   }
+      my $current, my $cond, my $temp, my $aktTemp;
+      if($xml=~/text="(.*)"(\ *)code="(.*)"(\ *)temp="(.*)"(\ *)date/){
+	  if(defined($1)){
+	      $cond   =$1;
+	      $current=$3;
+	      $temp   =$5;
+	  }else{
+	      $current=-1;
+	  }
 
-   if(($current>=0) && ($current <=47)) {
-     $hash->{WEATHER_CORRECTION} = $a_current[$current] / 25 * 20;
-     $hash->{WEATHER_HORIZON}    = $hash->{WEATHER_CORRECTION} + $hash->{INDOOR_HORIZON};
-     $hash->{CONDITION_TXT}      = $cond;
-     $hash->{CONDITION}          = $current;
-     $hash->{TEMPERATUR}         = $temp;
-     return 1;
-   }
+	  if(($current>=0) && ($current <=47)) {
+	      $hash->{WEATHER_CORRECTION} = $a_current[$current] / 25 * 20;
+	      $hash->{WEATHER_HORIZON}    = $hash->{WEATHER_CORRECTION} + $hash->{INDOOR_HORIZON};
+	      $hash->{CONDITION_TXT}      = $cond;
+	      $hash->{CONDITION}          = $current;
+	      $hash->{TEMPERATUR}         = $temp;
+	      return 1;
+	  }
+      }
+
+      Log3 $hash, 3, "[$hash->{NAME}] "
+	  ."No Weather location found at yahoo weather for location ID: $location\n"
+	  ."=======\n"
+	  .$xml
+	  ."\n=======";
   }
-
-  Log3 $hash, 3, "[$hash->{NAME}] "
-    ."No Weather location found at yahoo weather for location ID: $location\n"
-    ."=======\n"
-    .$xml
-    ."\n=======";
 
   $hash->{WEATHER_HORIZON} = "0";
   $hash->{CONDITION}       = "-1";
